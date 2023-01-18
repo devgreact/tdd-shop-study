@@ -1,16 +1,10 @@
-# 상품 판매 관련 설정 01
-
-- pages/order/tests/Calcurate.test.js 생성
-- https://testing-library.com/docs/ecosystem-user-event/
-
-```js
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Type from "../Type";
 
 // 상품 가격을 위한 테스트
 // 가격은 1000원, 옵션은 500원으로 생각하고 코드
-test("제품 가격 계산 테스트", async () => {
+test("상품 선택 변경시 가격 계산 테스트", async () => {
   render(<Type orederType="products" />);
 
   // 상품 총 가격 부분
@@ -32,4 +26,3 @@ test("제품 가격 계산 테스트", async () => {
   userEvent.type(good1, "1");
   expect(productsTotal).toHaveTextContent("1000");
 });
-```

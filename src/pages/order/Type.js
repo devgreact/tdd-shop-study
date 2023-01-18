@@ -42,9 +42,9 @@ const Type = ({ orderType }) => {
 
   return (
     <div>
-      <h2> 제품 종류 </h2>
-      <p>개당 가격</p>
-      <p>총 가격</p>
+      <h2>제품 종류</h2>
+      <p>개당 가격: </p>
+      <p>총 가격:</p>
       <div
         style={{
           display: "flex",
