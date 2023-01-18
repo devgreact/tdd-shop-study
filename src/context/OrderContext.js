@@ -1,11 +1,49 @@
-import { createContext, useMemo, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 const OrderContext = createContext();
 
+// 04-4
+const pricePerItem = {
+  products: 1000,
+  options: 500,
+};
+function calculateSubtotal(orderType, orderCounts) {
+  let optionCount = 0;
+  for (const count of orderCounts[orderType].values()) {
+    optionCount += count;
+  }
+
+  return optionCount * pricePerItem[orderType];
+}
+///////////////////////////////////
 export function OrderContextProvider(props) {
   const [orderCounts, setOrderCounts] = useState({
     products: new Map(),
     options: new Map(),
   });
+
+  // 04-1   상품 가격 계산을 위한 코드
+  // 상품을 추가할때마다 업데이트
+  const [totals, setTotals] = useState({
+    // 가격 0
+    products: 0,
+    // 가격 0
+    options: 0,
+    // 총 가격 0
+    total: 0,
+  });
+
+  // 04-2   상품 가격 계산을 위한 코드
+  // orderCounts 변할때 마다.
+  useEffect(() => {
+    const productsTotal = calculateSubtotal("products", orderCounts);
+    const optionsTotal = calculateSubtotal("options", orderCounts);
+    const total = productsTotal + optionsTotal;
+    setTotals({
+      products: productsTotal,
+      options: optionsTotal,
+      total: total,
+    });
+  }, [orderCounts]);
 
   const value = useMemo(() => {
     // 업데이트를 해줄 함수 정의
@@ -32,8 +70,11 @@ export function OrderContextProvider(props) {
     }
     // 추후 추가적인 내용이 들어갈 것이므로
     // 함수도 같이 리턴한다.
-    return [{ ...orderCounts }, updateItemCount];
-  }, [orderCounts]);
+
+    // 04-3   상품 가격 계산을 위한 코드
+    return [{ ...orderCounts, totals }, updateItemCount];
+    // 04-5
+  }, [orderCounts, totals]);
 
   return <OrderContext.Provider value={value} {...props} />;
 }
