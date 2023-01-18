@@ -1,7 +1,9 @@
 import { createContext, useEffect, useMemo, useState } from "react";
-const OrderContext = createContext();
 
-// 04-4
+// 05-1 내보내기 실제 사용하는 부분에 대한 처리
+// useContext 를 활용하려고 한다.
+export const OrderContext = createContext();
+
 const pricePerItem = {
   products: 1000,
   options: 500,
