@@ -1,35 +1,9 @@
-# 상품 판매 관련 설정 01
+# 상품 판매 관련 설정 02 컴포넌트 간에 데이터 공유
 
-- pages/order/tests/Calcurate.test.js 생성
-- https://testing-library.com/docs/ecosystem-user-event/
-
-```js
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import Type from "../Type";
-
-// 상품 가격을 위한 테스트
-// 가격은 1000원, 옵션은 500원으로 생각하고 코드
-test("제품 가격 계산 테스트", async () => {
-  render(<Type orederType="products" />);
-
-  // 상품 총 가격 부분
-  const productsTotal = screen.getByText("총 가격: ", { exact: false });
-  expect(productsTotal).toHaveTextContent("0");
-
-  // Good1 제품 1개 올리기
-  // 1000 원이 된다.
-  // roll 은 spinbutton 이다.
-  const good1 = await screen.findByRole("spinbutton", {
-    name: "Good1",
-  });
-
-  // 기존에는 fireEvent 를 사용했다. 이번에는 userEvent 를 활용한다.
-  // input 이나 textarea 에 텍스트를 선택(select) 한 후 제거(delete) 해줍니다.
-  // 하지만 현재 소스 코드 보다 위에서 같은 엘리먼트를 위한 userEvent를 사용했다면 clrea 해 준후에
-  // uxerEvent.type() 을 사용하는 것이 좋습니다.
-  userEvent.clear(good1);
-  userEvent.type(good1, "1");
-  expect(productsTotal).toHaveTextContent("1000");
-});
-```
+- 개수를 올리거나 옵션을 선택하면 공유한다.
+- 컴포넌트 간에 데이터를 공유해야 한다.
+- 데이터는 어떻게 공유를 할까?
+- 첫번째는 props 를 통해 전달할 수 있다.
+- 다른 방법은 react contex 를 통해 공유한다.
+- 라이브러리는 mobX, Redux 도 사용하여 데이터 흐름을 변경 할 수 있다.
+- context 는 까다롭다.
