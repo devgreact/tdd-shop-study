@@ -53,13 +53,17 @@ const Type = ({ orderType }) => {
     />
   ));
 
+  let orderTypeWord = orderType === "products" ? "상품" : "옵션";
+
   return (
     <div>
       <h2>제품 종류</h2>
-      <p>개당 가격: </p>
-      
+      <p>개당 가격 </p>
+
       {/* 05-12  */}
-      <p>총 가격: {orderDatas.totals[orderType]}</p>
+      <p>
+        {orderTypeWord} 총 가격: {orderDatas.totals[orderType]}
+      </p>
       <div
         style={{
           display: "flex",

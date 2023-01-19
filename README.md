@@ -1,39 +1,11 @@
-# 상품 판매 관련 설정 07 모든 테스트 케이스를 wrapper 로 감싸주기
+# 상품 판매 관련 설정 08 옵션 가격을 위한 테스트구현
 
-이전 내용에서 테스트 케이스에서 context 가 필요했기 때문에 wrapper 로 감싸주었다. 현재 다른 테스트들도 실행해 보면 context 가 필요하기 때문에 에러가 난다. 하지만 모든 케이스에 하나 하나 wrapper 를 주는 것은 불편하기 때문에 Custom Render 를 만들어서 사용해 준다.
-
-https://testing-library.com/docs/react-native-testing-library/setup/#custom-render
-
-## 커스텀 랜더 만들기 src/test-utils.js
-
-```js
-import { render } from "@testing-library/react";
-import { OrderContextProvider } from "./context/OrderContext";
-
-// ui : 렌더링하고자 하는 jsx
-// options : wrapper 옵션 이외에 우리가 주고자하는 다른 옵션들
-const customRender = (ui, options) =>
-  render(ui, { wrapper: OrderContextProvider, ...options });
-
-export * from "@testing-library/react";
-
-export { customRender as render };
-```
-
-## OrderContext.js
-
-```js
-setTotals({
-  products: productsTotal,
-  options: optionsTotal,
-  total: total,
-});
-```
+context 를 이용해서 상품 가격을 계산하고 그에 대한 테스트도 구현하였다.
+그래서 이번에는 옵션 가격을 위한 테스트를 구현하겠다.
 
 ## Calcurate.test.js
 
 ```js
-// 새로 가져옴
 import { render, screen } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
 import Type from "../Type";
@@ -45,7 +17,7 @@ test("상품 선택 변경시 가격 계산 테스트", async () => {
   render(<Type orderType="products" />);
 
   // 상품 총 가격 부분
-  const productsTotal = screen.getByText("총 가격:", { exact: false });
+  const productsTotal = screen.getByText("상품 총 가격:", { exact: false });
   expect(productsTotal).toHaveTextContent("0");
 
   // Good1 제품 1개 올리기
@@ -63,48 +35,136 @@ test("상품 선택 변경시 가격 계산 테스트", async () => {
   userEvent.type(good1, "1");
   expect(productsTotal).toHaveTextContent("1000");
 });
+
+// 옵션 정보 업데이트 테스트
+// 01 Option.js 로 이동
+test("옵션 선택 변경시 가격 계산 테스트", async () => {
+  render(<Type orderType="options" />);
+
+  const optionsTotal = screen.getByText("옵션 총 가격:", { exact: false });
+  expect(optionsTotal).toHaveTextContent("0");
+
+  const insuranceCheckbox = await screen.findByRole("checkbox", {
+    name: "option1",
+  });
+  userEvent.click(insuranceCheckbox);
+  expect(optionsTotal).toHaveTextContent("500");
+
+  const optionCheckbox = await screen.findByRole("checkbox", {
+    name: "option2",
+  });
+  userEvent.click(optionCheckbox);
+  expect(optionsTotal).toHaveTextContent("1000");
+
+  userEvent.click(optionCheckbox);
+  expect(optionsTotal).toHaveTextContent("500");
+});
 ```
 
-## Type.test.js
+## Type.js
 
 ```js
-// import { render, screen } from "@testing-library/react";
-import { render, screen } from "../../../test-utils";
-import Type from "../Type";
-// 서버통신 체크
-import { server } from "../../../mocks/server";
-import { rest } from "msw";
+// 05-3 useContext 에서 가져옴
+import React, { useContext, useEffect, useState } from "react";
+import axios from "axios";
+import Product from "./Product";
+import Option from "./Option";
+import ErrorBanner from "../../components/ErrorBanner";
 
-// order Type 테스트
-test("Order 상품 출력 테스트", async () => {
-  render(<Type orderType="products" />);
-  // 서버 호출 이미지 정보 출력
-  // 비동기 방식의 여러개의 태그를 테스트
-  let imgElement = await screen.findAllByRole("img", {
-    name: /product$/i,
-  });
-  expect(imgElement).toHaveLength(2);
+// 05-2 contxt 불러들이기
+import { OrderContext } from "../../context/OrderContext";
 
-  // img 태그에 alt 키에 대한 값이 정상인지 테스트
-  let altText = imgElement.map((element) => element.alt);
-  expect(altText).toEqual(["Good1 product", "Good2 product"]);
-});
-// 서버통신 에러
-test("서버 통신 에러 테스트", async () => {
-  server.resetHandlers(
-    rest.get("http://localhost:5000/products", (req, res, ctx) => {
-      return res(ctx.status(500));
-    })
+// orderType="products"  orderType="options"
+const Type = ({ orderType }) => {
+  // 서버에서 들어온 데이터 저장
+  const [items, setItems] = useState([]);
+  // 서버 에러 표시
+  const [error, setError] = useState(false);
+
+  // 05-1 context 를 가져온다.
+  // 05-3 contxt 사용
+  const [orderDatas, updateItemCount] = useContext(OrderContext);
+
+  //  외부 데이터 호출 시 useEffect 사용
+  useEffect(() => {
+    loadItems(orderType);
+  }, [orderType]);
+
+  const loadItems = async (orderType) => {
+    try {
+      let response = await axios.get(`http://localhost:5000/${orderType}`);
+      setItems(response.data);
+    } catch (error) {
+      // console.log(error);
+      setError(true);
+    }
+  };
+  // 서버 에러 시 경고창 출력
+  if (error) {
+    return <ErrorBanner message="에러가 발생했습니다." />;
+  }
+
+  const ItemComponents = orderType === "products" ? Product : Option;
+
+  const showItemArr = items.map((item) => (
+    <ItemComponents
+      key={item.name}
+      name={item.name}
+      imagePath={item.imagePath}
+      // 05-4 contxt 사용
+      // Product 컴포넌트로 이동
+      updateItemCount={(itemName, newItemCount) =>
+        updateItemCount(itemName, newItemCount, orderType)
+      }
+    />
+  ));
+
+  let orderTypeWord = orderType === "products" ? "상품" : "옵션";
+
+  return (
+    <div>
+      <h2>제품 종류</h2>
+      <p>개당 가격 </p>
+
+      {/* 05-12  */}
+      <p>
+        {orderTypeWord} 총 가격: {orderDatas.totals[orderType]}
+      </p>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: orderType === "options" && "column",
+        }}
+      >
+        {showItemArr}
+      </div>
+    </div>
   );
-  render(<Type orderType="products" />);
-  const errBanner = await screen.findByTestId("error-banner");
-  expect(errBanner).toHaveTextContent("에러가 발생했습니다.");
-});
+};
 
-// 옵션 정보 가져오기
-test("옵션 정보 출력 테스트", async () => {
-  render(<Type orderType="options" />);
-  const optionCheckboxes = await screen.findAllByRole("checkbox");
-  expect(optionCheckboxes).toHaveLength(2);
-});
+export default Type;
+```
+
+## Option.js
+
+```js
+import React from "react";
+
+const Option = ({ name, updateItemCount }) => {
+  return (
+    <form>
+      <input
+        type="checkbox"
+        id={`${name} option`}
+        onChange={(e) => {
+          updateItemCount(name, e.target.checked ? 1 : 0);
+        }}
+      />{" "}
+      {/* 수정 진행 */}
+      <label htmlFor={`${name} option`}>{name}</label>
+    </form>
+  );
+};
+
+export default Option;
 ```

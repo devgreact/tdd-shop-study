@@ -9,7 +9,7 @@ test("상품 선택 변경시 가격 계산 테스트", async () => {
   render(<Type orderType="products" />);
 
   // 상품 총 가격 부분
-  const productsTotal = screen.getByText("총 가격:", { exact: false });
+  const productsTotal = screen.getByText("상품 총 가격:", { exact: false });
   expect(productsTotal).toHaveTextContent("0");
 
   // Good1 제품 1개 올리기
@@ -26,4 +26,28 @@ test("상품 선택 변경시 가격 계산 테스트", async () => {
   userEvent.clear(good1);
   userEvent.type(good1, "1");
   expect(productsTotal).toHaveTextContent("1000");
+});
+
+// 옵션 정보 업데이트 테스트
+// 01 Option.js 로 이동
+test("옵션 선택 변경시 가격 계산 테스트", async () => {
+  render(<Type orderType="options" />);
+
+  const optionsTotal = screen.getByText("옵션 총 가격:", { exact: false });
+  expect(optionsTotal).toHaveTextContent("0");
+
+  const insuranceCheckbox = await screen.findByRole("checkbox", {
+    name: "option1",
+  });
+  userEvent.click(insuranceCheckbox);
+  expect(optionsTotal).toHaveTextContent("500");
+
+  const optionCheckbox = await screen.findByRole("checkbox", {
+    name: "option2",
+  });
+  userEvent.click(optionCheckbox);
+  expect(optionsTotal).toHaveTextContent("1000");
+
+  userEvent.click(optionCheckbox);
+  expect(optionsTotal).toHaveTextContent("500");
 });
