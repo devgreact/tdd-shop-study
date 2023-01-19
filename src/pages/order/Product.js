@@ -1,6 +1,14 @@
 import React from "react";
 
-const Product = ({ name, imagePath }) => {
+//05-5
+const Product = ({ name, imagePath, updateItemCount }) => {
+  //05-7
+  const handleChange = (event) => {
+    const currentValue = event.target.value;
+    updateItemCount(name, currentValue);
+  };
+  //05-8 옵션으로이동
+
   return (
     <div style={{ textAlgin: "center" }}>
       <img
@@ -23,6 +31,8 @@ const Product = ({ name, imagePath }) => {
           name="quantity"
           min="0"
           defaultValue={0}
+          // 05-6
+          onChange={handleChange}
         />
       </form>
     </div>

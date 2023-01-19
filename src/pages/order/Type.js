@@ -1,8 +1,11 @@
+// 05-3 useContext 에서 가져옴
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import Product from "./Product";
 import Option from "./Option";
 import ErrorBanner from "../../components/ErrorBanner";
+
+// 05-2 contxt 불러들이기
 import { OrderContext } from "../../context/OrderContext";
 
 // orderType="products"  orderType="options"
@@ -12,8 +15,9 @@ const Type = ({ orderType }) => {
   // 서버 에러 표시
   const [error, setError] = useState(false);
 
-  // 05-2 contxt 사용
-  const [orderDatas, updateItemCount] = useContext(OrderContext)
+  // 05-1 context 를 가져온다.
+  // 05-3 contxt 사용
+  const [orderDatas, updateItemCount] = useContext(OrderContext);
 
   //  외부 데이터 호출 시 useEffect 사용
   useEffect(() => {
@@ -41,6 +45,11 @@ const Type = ({ orderType }) => {
       key={item.name}
       name={item.name}
       imagePath={item.imagePath}
+      // 05-4 contxt 사용
+      // Product 컴포넌트로 이동
+      updateItemCount={(itemName, newItemCount) =>
+        updateItemCount(itemName, newItemCount, orderType)
+      }
     />
   ));
 
@@ -48,7 +57,9 @@ const Type = ({ orderType }) => {
     <div>
       <h2>제품 종류</h2>
       <p>개당 가격: </p>
-      <p>총 가격:</p>
+      
+      {/* 05-12  */}
+      <p>총 가격: {orderDatas.totals[orderType]}</p>
       <div
         style={{
           display: "flex",
