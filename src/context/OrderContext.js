@@ -16,6 +16,7 @@ function calculateSubtotal(orderType, orderCounts) {
 
   return optionCount * pricePerItem[orderType];
 }
+
 ///////////////////////////////////
 export function OrderContextProvider(props) {
   const [orderCounts, setOrderCounts] = useState({
@@ -75,6 +76,7 @@ export function OrderContextProvider(props) {
 
     // 04-3   상품 가격 계산을 위한 코드
     return [{ ...orderCounts, totals }, updateItemCount];
+
     // 04-5
   }, [orderCounts, totals]);
 
