@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+// import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../../test-utils";
 import Type from "../Type";
 // 서버통신 체크
 import { server } from "../../../mocks/server";

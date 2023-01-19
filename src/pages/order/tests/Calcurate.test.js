@@ -1,12 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";
-import { OrderContextProvider } from "../../../context/OrderContext";
 import Type from "../Type";
 
 // 상품 가격을 위한 테스트
 // 가격은 1000원, 옵션은 500원으로 생각하고 코드
 test("상품 선택 변경시 가격 계산 테스트", async () => {
-  render(<Type orderType="products" />, { wrapper: OrderContextProvider });
+  // 원래대로 돌려줌
+  render(<Type orderType="products" />);
 
   // 상품 총 가격 부분
   const productsTotal = screen.getByText("총 가격:", { exact: false });
